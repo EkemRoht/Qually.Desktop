@@ -1171,7 +1171,8 @@ namespace QuallyFlash
             HorseSex babyHorseSex;
             do
             {
-                if (document.QuerySelectorAll("#reproduction-tab-0 a").Last().Id != "boutonEchographie" && document.QuerySelectorAll("#reproduction-tab-0 a").Last().ClassName.Contains("disabled"))
+                IElement reproductionTab0 = document.QuerySelectorAll("#reproduction-tab-0 a").LastOrDefault();
+                if (reproductionTab0 == null)
                 {
                     document = await AgeToHorsing(document, momHorse).ConfigureAwait(false);
                     if (Settings.TrainType == TrainType.Team)
@@ -1185,7 +1186,9 @@ namespace QuallyFlash
                     document = await AgeToEcho(document, momHorse).ConfigureAwait(false);
                     babyHorseSex = await momHorse.Echography().ConfigureAwait(false);
                 }
-                else if (document.QuerySelectorAll("#reproduction-tab-0 a").Last().Id != "boutonEchographie" && !document.QuerySelectorAll("#reproduction-tab-0 a").Last().ClassName.Contains("disabled"))
+                else if (reproductionTab0 != null
+                    && reproductionTab0.Id != "boutonEchographie"
+                    && !reproductionTab0.ClassName.Contains("disabled"))
                 {
                     if (Settings.TrainType == TrainType.Team)
                     {
@@ -1198,7 +1201,9 @@ namespace QuallyFlash
                     document = await AgeToEcho(document, momHorse).ConfigureAwait(false);
                     babyHorseSex = await momHorse.Echography().ConfigureAwait(false);
                 }
-                else if (document.QuerySelector("#boutonEchographie") != null && document.QuerySelector("#boutonEchographie").ClassName.Contains("disabled") && document.QuerySelectorAll("#reproduction-tab-1 .col-1").Length > 0)
+                else if (document.QuerySelector("#boutonEchographie") != null
+                    && document.QuerySelector("#boutonEchographie").ClassName.Contains("disabled")
+                    && document.QuerySelectorAll("#reproduction-tab-1 .col-1").Length > 0)
                 {
                     babyHorseSex = momHorse.Echography(document);
                 }
@@ -1256,7 +1261,8 @@ namespace QuallyFlash
         int heavyHorsing = 0;
         private async Task<Horse> BornAny(IHtmlDocument document, Horse momHorse)
         {
-            if (document.QuerySelectorAll("#reproduction-tab-0 a").Last().Id != "boutonEchographie" && document.QuerySelectorAll("#reproduction-tab-0 a").Last().ClassName.Contains("disabled"))
+            IElement reproductionTab0 = document.QuerySelectorAll("#reproduction-tab-0 a").LastOrDefault();
+            if (reproductionTab0 == null)
             {
                 document = await AgeToHorsing(document, momHorse).ConfigureAwait(false);
                 if (Settings.TrainType == TrainType.Team)
@@ -1268,7 +1274,9 @@ namespace QuallyFlash
                     await momHorse.HorsingFemaleWithoutTeam(document).ConfigureAwait(false);
                 }
             }
-            else if (document.QuerySelectorAll("#reproduction-tab-0 a").Last().Id != "boutonEchographie" && !document.QuerySelectorAll("#reproduction-tab-0 a").Last().ClassName.Contains("disabled"))
+            else if (reproductionTab0 != null 
+                && reproductionTab0.Id != "boutonEchographie"
+                && !reproductionTab0.ClassName.Contains("disabled"))
             {
                 if (Settings.TrainType == TrainType.Team)
                 {
@@ -1290,10 +1298,12 @@ namespace QuallyFlash
 
         private async Task<IHtmlDocument> AgeToHorsing(IHtmlDocument document, Horse momHorse)
         {
+            IElement reproductionTab0 = null;
             do
             {
                 document = await TrainingCycle(document, momHorse, false).ConfigureAwait(false);
-            } while (document.QuerySelectorAll("#reproduction-tab-0 a").Last().Id != "boutonEchographie" && document.QuerySelectorAll("#reproduction-tab-0 a").Last().ClassName.Contains("disabled"));
+                reproductionTab0 = document.QuerySelectorAll("#reproduction-tab-0 a").LastOrDefault();
+            } while (reproductionTab0 == null);
             return document;
         }
 
