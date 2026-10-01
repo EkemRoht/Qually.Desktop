@@ -14,6 +14,8 @@ namespace AccountHolder
         public CancellationToken Ct { get; set; } = new CancellationToken();
         public string SID { get; set; }
         public string BaseAddress { get; set; }
+        public string LastUrl { get; private set; }
+        public string LastResponse { get; private set; }
 
         public NetClient(string uri)
         {
@@ -57,6 +59,8 @@ namespace AccountHolder
                     result.EnsureSuccessStatusCode();
                     answer = await result.Content.ReadAsStringAsync();
                     requestResult = Result.Success;
+                    LastUrl = url;
+                    LastResponse = answer;
                 }
                 catch (ArgumentNullException)
                 {
@@ -83,6 +87,8 @@ namespace AccountHolder
                     result.EnsureSuccessStatusCode();
                     answer = await result.Content.ReadAsStringAsync();
                     requestResult = Result.Success;
+                    LastUrl = url;
+                    LastResponse = answer;
                 }
                 catch (ArgumentNullException)
                 {

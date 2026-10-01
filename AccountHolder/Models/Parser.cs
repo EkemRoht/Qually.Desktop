@@ -1,6 +1,8 @@
 ﻿using AngleSharp.Html.Dom;
 using AngleSharp.Html.Parser;
 using Newtonsoft.Json.Linq;
+using System.Linq;
+using System.Text;
 
 namespace AccountHolder
 {
@@ -20,6 +22,18 @@ namespace AccountHolder
             string html = jobj[selector][0].Values()[0].ToString();
             IHtmlDocument document = parser.ParseDocument(html);
             return document;
+        }
+
+        public static IHtmlDocument ParseJsonDocument(string json)
+        {
+            var root = JToken.Parse(json);
+            var tokens = root is JContainer container ? container.Descendants() : new[] { root };
+            var html = new StringBuilder();
+            foreach (var value in tokens.OfType<JValue>().Where(v => v.Type == JTokenType.String))
+            {
+                html.Append(value.Value<string>());
+            }
+            return parser.ParseDocument(html.ToString());
         }
     }
 }

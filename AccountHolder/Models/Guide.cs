@@ -1,5 +1,6 @@
 ﻿using AngleSharp.Dom;
 using AngleSharp.Html.Dom;
+using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -96,10 +97,13 @@ namespace AccountHolder
             document = Parser.ParseDocument(await Acc.Client.GetAsync($"/marche/boutique"));
             Acc.Progress = $"{Properties.Resources.StageText} 4: {Properties.Resources.StepText} 4";
             string json = await Acc.Client.PostAsync($"/marche/produits", "id=equipement&mode=eleveur&visibilite=marche-eleveur");
-            json = json.Substring(72);
-            string html = json.Substring(0, json.Length - 20).Replace("\\", "");
-            document = Parser.ParseDocument(html);
-            string id = document.GetElementsByTagName("select")[0].GetAttribute("id").Substring(8);
+            document = Parser.ParseJsonDocument(json);
+            var select = document.QuerySelector("select[id]");
+            if (select == null)
+            {
+                throw new InvalidOperationException("No product select in /marche/produits response");
+            }
+            string id = select.GetAttribute("id").Substring(8);
             string answer;
             do
             {
@@ -458,7 +462,7 @@ namespace AccountHolder
         public async Task Valider(string html)
         {
             var document = Parser.ParseDocument(html);
-            string script = document.GetElementById("tutoriel-wrapper").LastElementChild.InnerHtml;
+            string script = getTutorialScript(document);
             string json = Regex.Match(script, "var callbackOptions = jQuery.parseJSON((.*?));").Groups[1].Value;
             string hash = Regex.Match(json, "{\"hash\":\"(.*?)\",\"isAjax\":false,\"isExternal\":false}").Groups[1].Value;
             await Acc.Client.PostAsync($"/joueur/tutoriel/doValider", "id=null&h=" + hash);
@@ -467,10 +471,20 @@ namespace AccountHolder
         public async Task Valider(string html, int startIndex, int length)
         {
             var document = Parser.ParseDocument(html);
-            string script = document.GetElementById("tutoriel-wrapper").LastElementChild.InnerHtml;
+            string script = getTutorialScript(document);
             string json = Regex.Match(script, "var callbackOptions = (.*?);").Groups[1].Value;
             string hash = json.Substring(startIndex, length);
             await Acc.Client.PostAsync($"/joueur/tutoriel/doValider", "id=null&h=" + hash);
+        }
+
+        private string getTutorialScript(IHtmlDocument document)
+        {
+            var wrapper = document.GetElementById("tutoriel-wrapper");
+            if (wrapper?.LastElementChild == null)
+            {
+                throw new InvalidOperationException("No tutorial block (#tutoriel-wrapper) on the page");
+            }
+            return wrapper.LastElementChild.InnerHtml;
         }
 
         private string getScript(IHtmlDocument document)

@@ -191,7 +191,8 @@ namespace AccountHolder
                     }
                     catch (Exception e)
                     {
-                        MessageBox.Show($"{Properties.Resources.MainTutorialErrorMessage} {e.Message}\n{e.StackTrace}", "", MessageBoxButton.OK, MessageBoxImage.Error);
+                        string log = SaveErrorLog(acc, e);
+                        MessageBox.Show($"{Properties.Resources.MainTutorialErrorMessage} {e.Message}\n{e.StackTrace}\n\nLog: {log}", "", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                     Count++;
                 }
@@ -202,6 +203,29 @@ namespace AccountHolder
             else
             {
                 MessageBox.Show(Properties.Resources.MainTutorailErrorMessage2, "", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private static string SaveErrorLog(Account acc, Exception e)
+        {
+            try
+            {
+                Directory.CreateDirectory("Logs");
+                string path = Path.GetFullPath(Path.Combine("Logs", $"{acc.Login}_{DateTime.Now:yyyyMMdd_HHmmss}.html"));
+                var log = new StringBuilder();
+                log.AppendLine("<!--");
+                log.AppendLine($"Server: {acc.Server}");
+                log.AppendLine($"Progress: {acc.Progress}");
+                log.AppendLine($"Url: {acc.Client?.LastUrl}");
+                log.AppendLine(e.ToString().Replace("-->", "- ->"));
+                log.AppendLine("-->");
+                log.Append(acc.Client?.LastResponse);
+                File.WriteAllText(path, log.ToString(), Encoding.UTF8);
+                return path;
+            }
+            catch (Exception ex)
+            {
+                return ex.Message;
             }
         }
 
